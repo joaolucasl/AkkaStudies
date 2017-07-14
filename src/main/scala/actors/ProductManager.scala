@@ -20,12 +20,18 @@ class ProductManager(product: String, quantity: Int, price: Double) extends Acto
 
   override def receive = {
     case GetPrice => {
-      if (scala.util.Random.nextFloat() <= 0.4f) {
+      if (scala.util.Random.nextFloat() <= 0.2f) {
         println(s"== Killing $self.product Manager ==")
-        context.stop(self)
+        throw new Exception("BANG!")
       }
       sender() ! ReceivePrice(product, 123.0)
     }
-    case GetQuantity => sender() ! ReceiveQuantity(product, quantity)
+    case GetQuantity => {
+      if (scala.util.Random.nextFloat() <= 0.1f) {
+        println(s"== Can't get qty $self.product Manager ==")
+        throw new SecurityException("Not allowed to get quantity!")
+      }
+      sender() ! ReceiveQuantity(product, quantity)
+    }
   }
 }

@@ -2,6 +2,9 @@ package actors
 
 import actors.Broker._
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.actor.OneForOneStrategy
+import akka.actor.SupervisorStrategy._
+import scala.concurrent.duration._
 
 /**
   * Created by joao.lucchetta on 7/7/17.
@@ -20,6 +23,12 @@ class Broker extends Actor with ActorLogging {
     super.preStart()
     products.foreach(p => context.actorOf(Props(classOf[ProductManager], p, 1, 2.0), s"manager-$p"))
   }
+
+  override val supervisorStrategy =
+    OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
+      case _: SecurityException        => Resume
+      case _: Exception                => Restart
+    }
 
   def receive = {
     case RequestData(product: String) => {
