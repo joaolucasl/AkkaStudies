@@ -14,8 +14,18 @@ object ProductManager {
 }
 
 class ProductManager(product: String, quantity: Int, price: Double) extends Actor {
+  override def preStart(): Unit = {
+    println(s"== Starting $self.product manager ==")
+  }
+
   override def receive = {
-    case GetPrice => sender() ! ReceivePrice(product, 123.0)
+    case GetPrice => {
+      if (scala.util.Random.nextFloat() <= 0.4f) {
+        println(s"== Killing $self.product Manager ==")
+        context.stop(self)
+      }
+      sender() ! ReceivePrice(product, 123.0)
+    }
     case GetQuantity => sender() ! ReceiveQuantity(product, quantity)
   }
 }

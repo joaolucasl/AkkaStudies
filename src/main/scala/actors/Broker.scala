@@ -10,15 +10,15 @@ object Broker {
   case class ReceivePrice(product: String, price: Double)
   case class ReceiveQuantity(product: String, quantity: Int)
   case class RequestData(product: String)
+  case object RequestRandomData
 }
 
 class Broker extends Actor with ActorLogging {
-  var products: Vector[String] = Vector("Banana", "Batata", "Melancia")
+  var products: Vector[String] = Vector("Banana", "Batata", "Melancia", "Arroz", "Feijao", "Carne", "Alface", "Tomate")
 
   override def preStart() = {
     super.preStart()
     products.foreach(p => context.actorOf(Props(classOf[ProductManager], p, 1, 2.0), s"manager-$p"))
-    println(context.children)
   }
 
   def receive = {
@@ -35,5 +35,6 @@ class Broker extends Actor with ActorLogging {
     }
     case ReceiveQuantity(product: String, quantity: Int) => log.info(s"Product: $product - Qty: $quantity")
     case ReceivePrice(product: String, price: Double) => log.info(s"Product $product - Price $price")
+    case RequestRandomData => self ! RequestData(products(scala.util.Random.nextInt(products.length)))
   }
 }
